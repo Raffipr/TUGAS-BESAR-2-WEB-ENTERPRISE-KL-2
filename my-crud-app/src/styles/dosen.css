@@ -1,0 +1,43 @@
+/* Dosen Styles - Mirip dengan mahasiswa.css tapi dengan warna yang berbeda */
+.dosen-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+}
+
+.dosen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dosen-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.dosen-title svg {
+  color: #10b981; /* Warna hijau sebagai pembeda dari Mahasiswa */
+}
+
+.dosen-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.dosen-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+}
+
+/* Sisanya menggunakan class yang sama dengan mahasiswa.css */
