@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { FiBook, FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { FiBook, FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from 'react-icons/fi';
 import supabase from '../utils/supabase';
-import '../styles/matkul.css'; // Import CSS khusus Matkul
+import '../styles/matkul.css';
 
 const Matkul: React.FC = () => {
-  const [matkul, setMatkul] = useState<any[]>([]);
-  const [kode, setKode] = useState('');
-  const [nama, setNama] = useState('');
-  const [sks, setSks] = useState(2);
+  const [matkulList, setMatkulList] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    kode: '',
+    nama: '',
+    sks: '',
+    dosen: ''
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,63 +23,102 @@ const Matkul: React.FC = () => {
 
   const fetchMatkul = async () => {
     const { data, error } = await supabase.from('matkul').select('*');
-    if (error) console.error('Error fetching data:', error);
-    else setMatkul(data || []);
+    if (error) {
+      console.error('Error fetching matkul:', error);
+      setErrorMessage('Gagal memuat data mata kuliah');
+    } else {
+      setMatkulList(data || []);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing && currentId) {
-      const { error } = await supabase
-        .from('matkul')
-        .update({ kode, nama, sks })
-        .eq('id', currentId);
-      
-      if (!error) {
-        fetchMatkul();
-        resetForm();
+    setErrorMessage('');
+
+    if (!formData.kode || !formData.nama || !formData.sks) {
+      setErrorMessage('Kode, Nama, dan SKS wajib diisi');
+      return;
+    }
+
+    try {
+      const matkulData = {
+        kode_matkul: formData.kode,
+        nama_matkul: formData.nama,
+        sks: parseInt(formData.sks),
+        dosen_pengampu: formData.dosen || null
+      };
+
+      if (isEditing && currentId) {
+        const { error } = await supabase
+          .from('matkul')
+          .update(matkulData)
+          .eq('id', currentId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('matkul').insert([matkulData]);
+        if (error) throw error;
       }
-    } else {
-      const { error } = await supabase.from('matkul').insert([{ kode, nama, sks }]);
-      if (!error) {
-        fetchMatkul();
-        resetForm();
-      }
+
+      fetchMatkul();
+      resetForm();
+    } catch (error) {
+      console.error('Error saving data:', error);
+      setErrorMessage('Terjadi kesalahan saat menyimpan data');
     }
   };
 
-  const handleEdit = (item: any) => {
-    setKode(item.kode);
-    setNama(item.nama);
-    setSks(item.sks);
+  const handleEdit = (matkul: any) => {
+    setFormData({
+      kode: matkul.kode_matkul,
+      nama: matkul.nama_matkul,
+      sks: matkul.sks,
+      dosen: matkul.dosen_pengampu || ''
+    });
     setIsEditing(true);
-    setCurrentId(item.id);
+    setCurrentId(matkul.id);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('matkul').delete().eq('id', id);
-    if (!error) fetchMatkul();
+    if (!window.confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+
+    try {
+      const { error } = await supabase.from('matkul').delete().eq('id', id);
+      if (error) throw error;
+      fetchMatkul();
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      setErrorMessage('Gagal menghapus data');
+    }
   };
 
   const resetForm = () => {
-    setKode('');
-    setNama('');
-    setSks(2);
+    setFormData({
+      kode: '',
+      nama: '',
+      sks: '',
+      dosen: ''
+    });
     setIsEditing(false);
     setCurrentId(null);
+    setErrorMessage('');
   };
 
   return (
     <div className="matkul-container">
       <div className="matkul-header">
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          className="btn btn-secondary"
-        >
+        <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
           <FiArrowLeft /> Kembali
         </button>
         <h2 className="matkul-title">
-          <FiBook /> Mata Kuliah
+          <FiBook /> Data Mata Kuliah
         </h2>
         <div className="matkul-actions">
           <button className="btn btn-primary" onClick={resetForm}>
@@ -84,55 +127,64 @@ const Matkul: React.FC = () => {
         </div>
       </div>
 
+      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+
       <form onSubmit={handleSubmit} className="matkul-form">
         <div className="form-group">
-          <label>Kode Matkul</label>
+          <label>Kode Mata Kuliah</label>
           <input
             type="text"
-            className="form-control"
-            value={kode}
-            onChange={(e) => setKode(e.target.value)}
+            name="kode"
+            value={formData.kode}
+            onChange={handleInputChange}
             placeholder="Contoh: CS101"
             required
           />
         </div>
-        
+
         <div className="form-group">
-          <label>Nama Matkul</label>
+          <label>Nama Mata Kuliah</label>
           <input
             type="text"
-            className="form-control"
-            value={nama}
-            onChange={(e) => setNama(e.target.value)}
-            placeholder="Contoh: Algoritma Pemrograman"
+            name="nama"
+            value={formData.nama}
+            onChange={handleInputChange}
+            placeholder="Nama lengkap mata kuliah"
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label>SKS</label>
-          <select
-            className="form-control"
-            value={sks}
-            onChange={(e) => setSks(Number(e.target.value))}
+          <input
+            type="number"
+            name="sks"
+            value={formData.sks}
+            onChange={handleInputChange}
+            placeholder="Jumlah SKS"
+            min="1"
+            max="8"
             required
-          >
-            {[2, 3, 4, 6].map((num) => (
-              <option key={num} value={num}>{num} SKS</option>
-            ))}
-          </select>
+          />
         </div>
-        
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+
+        <div className="form-group">
+          <label>Dosen Pengampu</label>
+          <input
+            type="text"
+            name="dosen"
+            value={formData.dosen}
+            onChange={handleInputChange}
+            placeholder="Nama dosen pengampu"
+          />
+        </div>
+
+        <div className="form-actions">
           <button type="submit" className="btn btn-primary">
-            {isEditing ? 'Update Data' : 'Tambah Data'}
+            {isEditing ? 'Simpan Perubahan' : 'Tambah Data'}
           </button>
           {isEditing && (
-            <button 
-              type="button" 
-              onClick={resetForm}
-              className="btn btn-secondary"
-            >
+            <button type="button" onClick={resetForm} className="btn btn-secondary">
               Batal
             </button>
           )}
@@ -144,32 +196,32 @@ const Matkul: React.FC = () => {
           <thead>
             <tr>
               <th>Kode</th>
-              <th>Nama Matkul</th>
+              <th>Nama</th>
               <th>SKS</th>
+              <th>Dosen</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {matkul.map((mk) => (
-              <tr key={mk.id}>
-                <td>{mk.kode}</td>
-                <td>{mk.nama}</td>
-                <td>{mk.sks} SKS</td>
+            {matkulList.map(matkul => (
+              <tr key={matkul.id}>
+                <td>{matkul.kode_matkul}</td>
+                <td>{matkul.nama_matkul}</td>
+                <td>{matkul.sks}</td>
+                <td>{matkul.dosen_pengampu || '-'}</td>
                 <td>
-                  <div className="action-buttons">
-                    <button 
-                      onClick={() => handleEdit(mk)} 
-                      className="btn btn-icon btn-secondary"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(mk.id)} 
-                      className="btn btn-icon btn-danger"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleEdit(matkul)}
+                    className="btn-icon btn-edit"
+                  >
+                    <FiEdit2 />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(matkul.id)}
+                    className="btn-icon btn-danger"
+                  >
+                    <FiTrash2 />
+                  </button>
                 </td>
               </tr>
             ))}

@@ -1,68 +1,69 @@
-/* Kelas Styles - Konsep sama dengan modul lain */
-.kelas-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  padding: 2rem;
+/* kelas.css, mahasiswa.css, matkul.css */
+.kelas-container, .mahasiswa-container, .matkul-container {
+  padding: 20px;
 }
 
-.kelas-header {
+.kelas-header, .mahasiswa-header, .matkul-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 20px;
 }
 
-.kelas-title {
+.kelas-title, .mahasiswa-title, .matkul-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.kelas-actions, .mahasiswa-actions, .matkul-actions {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.5rem;
-  color: #1e293b;
 }
 
-.kelas-title svg {
-  color: #8b5cf6; /* Warna ungu untuk kelas */
+.btn {
+  margin-left: 10px;
 }
 
-.kelas-actions {
-  display: flex;
-  gap: 12px;
+.kelas-form, .mahasiswa-form, .matkul-form {
+  margin-bottom: 20px;
 }
 
-.kelas-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  background: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 10px;
-  margin-bottom: 2rem;
-}
-
-/* Gunakan class yang sama dengan komponen lain untuk konsistensi */
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #475569;
+.form-group {
+  margin-bottom: 15px;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  transition: all 0.2s;
-  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.form-control:focus {
-  outline: none;
-  border-color: #a5b4fc;
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+.table-responsive {
+  overflow-x: auto;
 }
 
-/* ... (sisa CSS sama seperti komponen lainnya) ... */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f2f2f2;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+}

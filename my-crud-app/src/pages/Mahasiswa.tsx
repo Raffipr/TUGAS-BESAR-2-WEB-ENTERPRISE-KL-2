@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { FiUsers, FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from 'react-icons/fi';
+import { FiUser , FiEdit2, FiTrash2, FiPlus, FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
-import '../styles/mahasiswa.css'; // Import CSS
+import '../styles/mahasiswa.css'; // Import CSS khusus Mahasiswa
 
 const Mahasiswa: React.FC = () => {
   const [mahasiswa, setMahasiswa] = useState<any[]>([]);
   const [nama, setNama] = useState('');
   const [nim, setNim] = useState('');
-  const [email, setEmail] = useState('');
+  const [prodi, setProdi] = useState('');
+  const [kelasId, setKelasId] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -25,10 +26,17 @@ const Mahasiswa: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const mahasiswaData = {
+      nama,
+      nim,
+      prodi,
+      kelas_id: kelasId
+    };
+
     if (isEditing && currentId) {
       const { error } = await supabase
         .from('mahasiswa')
-        .update({ nama, nim, email })
+        .update(mahasiswaData)
         .eq('id', currentId);
       
       if (!error) {
@@ -36,18 +44,16 @@ const Mahasiswa: React.FC = () => {
         resetForm();
       }
     } else {
-      const { error } = await supabase.from('mahasiswa').insert([{ nama, nim, email }]);
-      if (!error) {
-        fetchMahasiswa();
-        resetForm();
-      }
+      const { error } = await supabase.from('mahasiswa').insert([mahasiswaData]);
+      if (!error) fetchMahasiswa();
     }
   };
 
   const handleEdit = (item: any) => {
     setNama(item.nama);
     setNim(item.nim);
-    setEmail(item.email);
+    setProdi(item.prodi);
+    setKelasId(item.kelas_id);
     setIsEditing(true);
     setCurrentId(item.id);
   };
@@ -60,7 +66,8 @@ const Mahasiswa: React.FC = () => {
   const resetForm = () => {
     setNama('');
     setNim('');
-    setEmail('');
+    setProdi('');
+    setKelasId('');
     setIsEditing(false);
     setCurrentId(null);
   };
@@ -75,7 +82,7 @@ const Mahasiswa: React.FC = () => {
           <FiArrowLeft /> Kembali
         </button>
         <h2 className="mahasiswa-title">
-          <FiUsers /> Data Mahasiswa
+          <FiUser  /> Data Mahasiswa
         </h2>
         <div className="mahasiswa-actions">
           <button className="btn btn-primary" onClick={resetForm}>
@@ -92,7 +99,7 @@ const Mahasiswa: React.FC = () => {
             className="form-control"
             value={nama}
             onChange={(e) => setNama(e.target.value)}
-            placeholder="Contoh: John Doe"
+            placeholder="Nama mahasiswa"
             required
           />
         </div>
@@ -104,24 +111,36 @@ const Mahasiswa: React.FC = () => {
             className="form-control"
             value={nim}
             onChange={(e) => setNim(e.target.value)}
-            placeholder="Contoh: 12345678"
+            placeholder="Nomor Induk Mahasiswa"
             required
           />
         </div>
         
         <div className="form-group">
-          <label>Email</label>
+          <label>Program Studi</label>
           <input
-            type="email"
+            type="text"
             className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Contoh: john@example.com"
+            value={prodi}
+            onChange={(e) => setProdi(e.target.value)}
+            placeholder="Program studi"
             required
           />
         </div>
         
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div className="form-group">
+          <label>Kelas</label>
+          <input
+            type="text"
+            className="form-control"
+            value={kelasId}
+            onChange={(e) => setKelasId(e.target.value)}
+            placeholder="ID Kelas"
+            required
+          />
+        </div>
+        
+        <div className="form-actions">
           <button type="submit" className="btn btn-primary">
             {isEditing ? 'Update Data' : 'Tambah Data'}
           </button>
@@ -141,18 +160,20 @@ const Mahasiswa: React.FC = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>NIM</th>
               <th>Nama</th>
-              <th>Email</th>
+              <th>NIM</th>
+              <th>Prodi</th>
+              <th>Kelas</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
             {mahasiswa.map((mhs) => (
               <tr key={mhs.id}>
-                <td>{mhs.nim}</td>
                 <td>{mhs.nama}</td>
-                <td>{mhs.email}</td>
+                <td>{mhs.nim}</td>
+                <td>{mhs.prodi}</td>
+                <td>{mhs.kelas_id}</td>
                 <td>
                   <div className="action-buttons">
                     <button 
